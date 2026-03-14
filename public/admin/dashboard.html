@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FoodStore</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <div class="logo-icon">🍕</div>
+                <h1>FoodStore</h1>
+            </div>
+            <nav class="admin-nav">
+                <a href="#" class="admin-nav-link active" onclick="showSection('dashboard')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="#" class="admin-nav-link" onclick="showSection('products')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    Products
+                </a>
+                <a href="#" class="admin-nav-link" onclick="showSection('orders')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    Orders
+                </a>
+                <a href="#" class="admin-nav-link" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Dashboard Section -->
+            <section id="dashboardSection">
+                <div class="admin-header">
+                    <h1 class="admin-title">Dashboard Overview</h1>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon revenue">💰</div>
+                        </div>
+                        <div class="stat-card-value" id="totalRevenue">₦0</div>
+                        <div class="stat-card-label">Total Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon orders">📦</div>
+                        </div>
+                        <div class="stat-card-value" id="totalOrders">0</div>
+                        <div class="stat-card-label">Total Orders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon products">🛍️</div>
+                        </div>
+                        <div class="stat-card-value" id="totalProducts">0</div>
+                        <div class="stat-card-label">Products</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon customers">👥</div>
+                        </div>
+                        <div class="stat-card-value" id="pendingOrders">0</div>
+                        <div class="stat-card-label">Pending Orders</div>
+                    </div>
+                </div>
+                <h2 style="margin: 40px 0 20px;">Recent Orders</h2>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section id="productsSection" style="display: none;">
+                <div class="admin-header">
+                    <h1 class="admin-title">Manage Products</h1>
+                    <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="ordersSection" style="display: none;">
+                <div class="admin-header">
+                    <h1 class="admin-title">Manage Orders</h1>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTable"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="productModalTitle">Add New Product</h3>
+                <button class="modal-close" onclick="closeProductModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Price (₦)</label>
+                            <input type="number" id="productPrice" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Original Price (₦) <small style="color: var(--text-muted)">(optional)</small></label>
+                            <input type="number" id="productOriginalPrice">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="productCategory" required>
+                                <option value="snacks">Snacks</option>
+                                <option value="drinks">Drinks</option>
+                                <option value="groceries">Groceries</option>
+                                <option value="fast-food">Fast Food</option>
+                                <option value="fruits">Fruits</option>
+                                <option value="dairy">Dairy</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock</label>
+                            <input type="number" id="productStock" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="productDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Product Image</label>
+                        <input type="file" id="productImage" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="productFeatured" style="width: auto;">
+                            Mark as Featured Product
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Order Details</h3>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="orderModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeOrderModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="../js/admin.js"></script>
+</body>
+
+</html>

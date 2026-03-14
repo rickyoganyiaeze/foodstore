@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - FoodStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Standard Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo"><div class="logo-icon">🍕</div><div class="logo-text">Food<span>Store</span></div></a>
+                <nav class="nav" id="nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="products.html" class="nav-link">Products</a>
+                    <a href="contact.html" class="nav-link active">Contact</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main style="padding: calc(var(--header-height) + 60px) 0;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; max-width: 1000px; margin: 0 auto;">
+                <div>
+                    <h1 class="section-title" style="margin-bottom: 20px;">Get in <span>Touch</span></h1>
+                    <p style="color: var(--text-secondary); margin-bottom: 40px;">Have questions or feedback? We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div style="width: 50px; height: 50px; background: rgba(255,107,53,0.15); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">📍</div>
+                            <div>
+                                <h4>Address</h4>
+                                <p style="color: var(--text-muted);">123 Food Street, Lagos, Nigeria</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div style="width: 50px; height: 50px; background: rgba(255,107,53,0.15); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">📧</div>
+                            <div>
+                                <h4>Email</h4>
+                                <p style="color: var(--text-muted);">support@foodstore.com</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div style="width: 50px; height: 50px; background: rgba(255,107,53,0.15); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">📞</div>
+                            <div>
+                                <h4>Phone</h4>
+                                <p style="color: var(--text-muted);">+234 800 123 4567</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkout-form" style="margin: 0;">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" name="name" required placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" name="email" required placeholder="john@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" name="subject" required placeholder="How can we help?">
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea name="message" required placeholder="Your message..." rows="5"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="js/main.js"></script>
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            FoodStore.showToast('Message sent successfully! We\'ll get back to you soon.', 'success');
+            e.target.reset();
+        });
+    </script>
+    <style>
+        @media (max-width: 768px) {
+            main > .container > div { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</body>
+</html>

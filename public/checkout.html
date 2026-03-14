@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - FoodStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo"><div class="logo-icon">🍕</div><div class="logo-text">Food<span>Store</span></div></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="checkout-page">
+        <div class="container">
+            <h1 class="section-title" style="margin-bottom: 30px;">Checkout</h1>
+            
+            <div class="checkout-container">
+                <div class="checkout-form">
+                    <form id="checkoutForm">
+                        <div class="form-section">
+                            <h3 class="form-section-title">Personal Information</h3>
+                            <div class="form-group">
+                                <label>Full Name *</label>
+                                <input type="text" name="name" required placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address *</label>
+                                <input type="email" name="email" required placeholder="john@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number *</label>
+                                <input type="tel" name="phone" required placeholder="+234 800 123 4567">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="form-section-title">Delivery Address</h3>
+                            <div class="form-group">
+                                <label>Street Address *</label>
+                                <input type="text" name="street" required placeholder="123 Main Street">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>City *</label>
+                                    <input type="text" name="city" required placeholder="Lagos">
+                                </div>
+                                <div class="form-group">
+                                    <label>State *</label>
+                                    <select name="state" required>
+                                        <option value="">Select State</option>
+                                        <option value="Lagos">Lagos</option>
+                                        <option value="Abuja">Abuja</option>
+                                        <option value="Rivers">Rivers</option>
+                                        <option value="Oyo">Oyo</option>
+                                        <option value="Kano">Kano</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Additional Notes</label>
+                                <textarea name="notes" placeholder="Any special instructions..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="cart-summary" style="position: sticky; top: 100px;">
+                    <h3 class="summary-title">Your Order</h3>
+                    <div id="orderItems" style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
+                        <!-- Items will be rendered here -->
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="checkoutSubtotal">₦0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery</span>
+                        <span id="checkoutDelivery">₦0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="checkoutTotal">₦0</span>
+                    </div>
+
+                    <button class="btn btn-primary checkout-btn" style="width: 100%; margin-top: 20px;" onclick="processPayment()" id="payBtn">
+                        Pay with Paystack
+                    </button>
+                    
+                    <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 12px;">
+                        🔒 Secure payment powered by Paystack
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="js/main.js"></script>
+    <script>
+        let orderId;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cart = FoodStore.getCart();
+            if (cart.length === 0) {
+                window.location.href = 'cart.html';
+                return;
+            }
+            renderOrderSummary();
+        });
+
+        function renderOrderSummary() {
+            const cart = FoodStore.getCart();
+            const subtotal = FoodStore.getCartTotal();
+            const delivery = subtotal > 10000 ? 0 : 500;
+            const total = subtotal + delivery;
+
+            document.getElementById('orderItems').innerHTML = cart.map(item => `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                    <span>${item.name} x ${item.quantity}</span>
+                    <span>${FoodStore.formatCurrency(item.price * item.quantity)}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('checkoutSubtotal').textContent = FoodStore.formatCurrency(subtotal);
+            document.getElementById('checkoutDelivery').textContent = delivery === 0 ? 'FREE' : FoodStore.formatCurrency(delivery);
+            document.getElementById('checkoutTotal').textContent = FoodStore.formatCurrency(total);
+        }
+
+        async function processPayment() {
+            const form = document.getElementById('checkoutForm');
+            const formData = new FormData(form);
+            
+            // Validate
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const payBtn = document.getElementById('payBtn');
+            payBtn.disabled = true;
+            payBtn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div> Processing...';
+
+            const customer = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone')
+            };
+
+            const deliveryAddress = {
+                street: formData.get('street'),
+                city: formData.get('city'),
+                state: formData.get('state')
+            };
+
+            const cart = FoodStore.getCart();
+            const subtotal = FoodStore.getCartTotal();
+            const delivery = subtotal > 10000 ? 0 : 500;
+            const total = subtotal + delivery;
+
+            try {
+                // 1. Create Order in Database
+                const orderData = {
+                    customer,
+                    deliveryAddress,
+                    items: cart.map(item => ({ product: item._id, quantity: item.quantity })),
+                    paymentMethod: 'paystack',
+                    notes: formData.get('notes')
+                };
+
+                const orderRes = await FoodStore.apiRequest('/orders', {
+                    method: 'POST',
+                    body: JSON.stringify(orderData)
+                });
+
+                orderId = orderRes.data.orderId;
+
+                // 2. Initialize Payment
+                const paymentRes = await FoodStore.apiRequest('/payment/initialize', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: customer.email,
+                        amount: total,
+                        orderId: orderId
+                    })
+                });
+
+                // 3. Open Paystack Modal
+                const handler = PaystackPop.setup({
+                    key: 'pk_test_your_paystack_public_key', // Replace with your key
+                    email: customer.email,
+                    amount: total * 100, // Convert to kobo
+                    ref: paymentRes.data.reference,
+                    callback: function(response) {
+                        verifyPayment(response.reference);
+                    },
+                    onClose: function() {
+                        payBtn.disabled = false;
+                        payBtn.innerHTML = 'Pay with Paystack';
+                        FoodStore.showToast('Payment window closed', 'warning');
+                    }
+                });
+                handler.openIframe();
+
+            } catch (error) {
+                payBtn.disabled = false;
+                payBtn.innerHTML = 'Pay with Paystack';
+                FoodStore.showToast(error.message || 'Failed to process order', 'error');
+            }
+        }
+
+        async function verifyPayment(reference) {
+            try {
+                const res = await FoodStore.apiRequest(`/payment/verify/${reference}`);
+                if (res.data.status === 'success') {
+                    FoodStore.clearCart();
+                    window.location.href = `success.html?ref=${reference}&orderId=${orderId}`;
+                } else {
+                    FoodStore.showToast('Payment verification failed', 'error');
+                }
+            } catch (error) {
+                FoodStore.showToast('Error verifying payment', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

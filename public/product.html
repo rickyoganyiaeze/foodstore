@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - FoodStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header (Copy from index.html) -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo"><div class="logo-icon">🍕</div><div class="logo-text">Food<span>Store</span></div></a>
+                <nav class="nav" id="nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="products.html" class="nav-link active">Products</a>
+                </nav>
+                <div class="header-actions">
+                    <a href="cart.html" class="cart-btn">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main style="padding: calc(var(--header-height) + 40px) 0 60px;">
+        <div class="container">
+            <div id="productDetail" style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start;">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadProductDetail);
+
+        async function loadProductDetail() {
+            const container = document.getElementById('productDetail');
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id');
+
+            if (!productId) {
+                window.location.href = 'products.html';
+                return;
+            }
+
+            try {
+                const data = await FoodStore.apiRequest(`/products/${productId}`);
+                const product = data.data;
+                renderProduct(product);
+            } catch (error) {
+                // Fallback sample
+                const sample = {
+                    _id: productId,
+                    name: 'Delicious Food Item',
+                    price: 2500,
+                    originalPrice: 3000,
+                    description: 'A very tasty and fresh food item prepared with the best ingredients. Perfect for any meal of the day.',
+                    category: 'fast-food',
+                    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600',
+                    rating: 4.5,
+                    stock: 25
+                };
+                renderProduct(sample);
+            }
+        }
+
+        function renderProduct(product) {
+            const container = document.getElementById('productDetail');
+            const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+
+            container.innerHTML = `
+                <div class="product-detail-image" style="background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden;">
+                    <img src="${product.image || 'https://via.placeholder.com/600'}" alt="${product.name}" style="width: 100%; height: auto;">
+                </div>
+                <div class="product-detail-info">
+                    <a href="products.html?category=${product.category}" style="color: var(--accent-primary); text-transform: uppercase; font-size: 0.85rem; font-weight: 600;">${product.category}</a>
+                    <h1 style="font-family: var(--font-display); font-size: 2.5rem; margin: 12px 0;">${product.name}</h1>
+                    
+                    <div class="product-rating" style="margin-bottom: 20px;">
+                        <div class="stars">${generateStars(product.rating || 4.5)}</div>
+                        <span style="color: var(--text-muted);">(${product.numReviews || 0} reviews)</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                        <span style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--accent-primary);">${FoodStore.formatCurrency(product.price)}</span>
+                        ${hasDiscount ? `<span style="font-size: 1.5rem; color: var(--text-muted); text-decoration: line-through;">${FoodStore.formatCurrency(product.originalPrice)}</span>` : ''}
+                        ${hasDiscount ? `<span class="badge badge-sale">-${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%</span>` : ''}
+                    </div>
+
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 30px;">${product.description}</p>
+
+                    <div style="margin-bottom: 30px;">
+                        <span style="color: ${product.stock > 0 ? 'var(--success)' : 'var(--error)'}; font-weight: 600;">
+                            ${product.stock > 0 ? `✓ In Stock (${product.stock} available)` : '✕ Out of Stock'}
+                        </span>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 30px;">
+                        <div class="quantity-control" style="background: var(--bg-secondary); padding: 8px;">
+                            <button class="qty-btn" onclick="changeQty(-1)">-</button>
+                            <span class="qty-value" id="qtyValue">1</span>
+                            <button class="qty-btn" onclick="changeQty(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 16px;">
+                        <button class="btn btn-primary btn-lg" style="flex: 1;" onclick="addProductToCart('${product._id}')" ${product.stock <= 0 ? 'disabled style="opacity:0.5"' : ''}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                            Add to Cart
+                        </button>
+                        <button class="btn btn-secondary btn-icon btn-lg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+            `;
+            
+            // Store product globally for cart function
+            window.currentProduct = product;
+        }
+
+        function generateStars(rating) {
+            let stars = '';
+            const fullStars = Math.floor(rating);
+            for (let i = 0; i < fullStars; i++) stars += '<span class="star" style="color: var(--accent-tertiary);">★</span>';
+            for (let i = fullStars; i < 5; i++) stars += '<span class="star" style="opacity: 0.3;">★</span>';
+            return stars;
+        }
+
+        let quantity = 1;
+        function changeQty(delta) {
+            quantity = Math.max(1, quantity + delta);
+            document.getElementById('qtyValue').textContent = quantity;
+        }
+
+        function addProductToCart() {
+            if (window.currentProduct) {
+                FoodStore.addToCart(window.currentProduct, quantity);
+            }
+        }
+    </script>
+    <style>
+        @media (max-width: 768px) {
+            #productDetail { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</body>
+</html>
